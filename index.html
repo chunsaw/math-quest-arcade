@@ -1,0 +1,1589 @@
+<title>Math Quest Arcade</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:ital,wght@0,500;0,700;0,800;1,600&family=Space+Mono:wght@400;700&display=swap">
+<style>
+  :root{
+    /* tupai.ai brand palette — option A */
+    --paper:#F9F4E9;
+    --card:#FFFFFF;
+    --ink:#1B1B1B;
+    --ink-soft:#6E675C;
+    --line:#1B1B1B;
+    --coral:#FF6300;   --coral-soft:#FFEBD1;
+    --amber:#E410AF;   --amber-soft:#FCE2F8;
+    --violet:#4F5BFD;  --violet-soft:#DDE8FF;
+    --leaf:#2826AD;    --leaf-soft:#E6E5F9;
+    --sky:#1B1B1B;     --sky-soft:#F6F4F0;
+    --good:#1E9E5A;
+    --bad:#E02B2B;
+    --shadow:0 4px 0 var(--ink);
+    --shadow-big:0 6px 0 var(--ink);
+    --r:16px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Nunito','Trebuchet MS',system-ui,sans-serif;
+    font-weight:600;
+    min-height:100vh;
+    line-height:1.5;
+  }
+  button{font-family:inherit;color:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+  button:focus-visible,input:focus-visible{outline:3px solid var(--violet);outline-offset:2px}
+  h1,h2,h3,.display{font-family:'Fredoka','Nunito',sans-serif;font-weight:600;letter-spacing:.01em;text-wrap:balance}
+  .mono{font-family:'Space Mono',ui-monospace,monospace}
+
+  #app{max-width:820px;margin:0 auto;padding:16px 16px 64px}
+  .screen{display:none}
+  .screen.active{display:block;animation:pop-in .25s ease}
+  @keyframes pop-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+  }
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    display:flex;align-items:center;gap:12px;
+    margin-bottom:20px;min-height:52px;
+  }
+  .btn{
+    border:3px solid var(--line);border-radius:14px;
+    background:var(--card);box-shadow:var(--shadow);
+    font-weight:800;font-size:1rem;padding:10px 18px;
+    transition:transform .08s ease,box-shadow .08s ease;
+  }
+  .btn:active{transform:translateY(4px);box-shadow:0 0 0 var(--ink)}
+  .btn.primary{background:var(--ink);color:#fff}
+  .btn.small{padding:7px 13px;font-size:.9rem;border-radius:12px}
+  .btn:disabled{opacity:.4;cursor:default}
+  .btn:disabled:active{transform:none;box-shadow:var(--shadow)}
+  .topbar .title{font-size:1.35rem;flex:1;display:flex;align-items:center;gap:10px}
+  .badge{
+    font-family:'Space Mono',monospace;font-size:.85rem;font-weight:700;
+    border:3px solid var(--line);border-radius:999px;background:var(--card);
+    padding:5px 13px;box-shadow:var(--shadow);white-space:nowrap;
+  }
+
+  /* ---------- hub ---------- */
+  .hero{
+    text-align:center;margin:26px 0 30px;
+  }
+  .hero .kicker{
+    display:inline-block;font-family:'Space Mono',monospace;font-size:.78rem;font-weight:700;
+    letter-spacing:.18em;text-transform:uppercase;color:var(--ink);
+    border:3px solid var(--line);border-radius:999px;padding:5px 16px;background:var(--amber-soft);
+    box-shadow:var(--shadow);margin-bottom:16px;
+  }
+  .hero h1{font-size:clamp(2.3rem,7vw,3.4rem);line-height:1.05}
+  .hero h1 .spark{color:var(--coral)}
+  .hero p{max-width:32rem;margin:12px auto 0;color:var(--ink-soft);font-size:1.05rem}
+  .game-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:18px}
+  .game-card{
+    text-align:left;border:3px solid var(--line);border-radius:20px;
+    background:var(--card);box-shadow:var(--shadow-big);
+    padding:18px;display:flex;flex-direction:column;gap:8px;
+    transition:transform .1s ease,box-shadow .1s ease;
+  }
+  .game-card:hover{transform:translateY(-3px);box-shadow:0 9px 0 var(--ink)}
+  .game-card:active{transform:translateY(3px);box-shadow:0 3px 0 var(--ink)}
+  .game-card .icon{
+    width:58px;height:58px;border:3px solid var(--line);border-radius:16px;
+    display:flex;align-items:center;justify-content:center;font-size:1.9rem;
+  }
+  .game-card h2{font-size:1.3rem}
+  .game-card .tag{
+    font-family:'Space Mono',monospace;font-size:.7rem;font-weight:700;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);
+  }
+  .game-card p{font-weight:600;color:var(--ink-soft);font-size:.93rem;flex:1}
+  .game-card .stars{font-size:1.05rem;letter-spacing:.1em}
+  .c-coral .icon{background:var(--coral-soft)} .c-coral .tag{color:#C94E00}
+  .c-amber .icon{background:var(--amber-soft)} .c-amber .tag{color:#A00C7B}
+  .c-violet .icon{background:var(--violet-soft)} .c-violet .tag{color:#3A44D1}
+  .c-leaf .icon{background:var(--leaf-soft)} .c-leaf .tag{color:var(--leaf)}
+  .c-sky .icon{background:var(--sky-soft)} .c-sky .tag{color:var(--sky)}
+
+  /* ---------- shared game chrome ---------- */
+  .stage{
+    border:3px solid var(--line);border-radius:22px;background:var(--card);
+    box-shadow:var(--shadow-big);padding:22px;max-width:760px;margin:0 auto;
+  }
+  .stage-head{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:16px}
+  .stage-head .prompt{flex:1 1 100%;font-size:1.12rem;font-weight:700}
+  .pillrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+  .feedback{
+    min-height:2.2em;margin-top:14px;font-weight:800;font-size:1.05rem;
+    display:flex;align-items:center;gap:8px;
+  }
+  .feedback.good{color:var(--good)}
+  .feedback.bad{color:var(--bad)}
+  .answer-row{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+  .answer-row input{
+    flex:1;min-width:140px;border:3px solid var(--line);border-radius:14px;
+    font-family:'Space Mono',monospace;font-size:1.15rem;font-weight:700;
+    padding:10px 14px;background:var(--paper);color:var(--ink);
+  }
+  .progress-dots{display:flex;gap:6px}
+  .progress-dots span{
+    width:14px;height:14px;border:2.5px solid var(--line);border-radius:50%;
+    background:var(--card);
+  }
+  .progress-dots span.done{background:var(--leaf)}
+  .progress-dots span.now{background:var(--amber)}
+  .endcard{text-align:center;padding:28px 10px}
+  .endcard .big{font-size:3rem;margin-bottom:6px}
+  .endcard h2{font-size:1.7rem;margin-bottom:8px}
+  .endcard p{color:var(--ink-soft);margin-bottom:18px}
+  .endcard .starline{font-size:2rem;letter-spacing:.15em;margin-bottom:16px}
+
+  /* ---------- target number ---------- */
+  .tn-target{
+    display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:16px;
+  }
+  .tn-target .num{
+    font-family:'Fredoka',sans-serif;font-size:2.8rem;font-weight:700;color:#fff;
+    background:var(--coral);border:3px solid var(--line);border-radius:18px;
+    box-shadow:var(--shadow);padding:2px 26px;
+  }
+  .tn-expr{
+    border:3px dashed var(--ink-soft);border-radius:14px;background:var(--paper);
+    min-height:64px;display:flex;align-items:center;justify-content:center;
+    font-family:'Space Mono',monospace;font-size:1.5rem;font-weight:700;
+    padding:10px 14px;margin-bottom:6px;text-align:center;flex-wrap:wrap;word-break:break-all;
+  }
+  .tn-expr .ph{color:var(--ink-soft);font-family:'Nunito',sans-serif;font-size:.95rem;font-weight:700}
+  .tn-live{min-height:1.5em;text-align:center;font-family:'Space Mono',monospace;font-weight:700;color:var(--ink-soft);margin-bottom:12px}
+  .tn-live .hit{color:var(--good)}
+  .chips{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:12px}
+  .chip{
+    font-family:'Fredoka',sans-serif;font-size:1.5rem;font-weight:600;
+    min-width:60px;padding:8px 0;border:3px solid var(--line);border-radius:16px;
+    background:var(--coral-soft);box-shadow:var(--shadow);
+    transition:transform .08s ease,box-shadow .08s ease;
+  }
+  .chip:active{transform:translateY(4px);box-shadow:0 0 0 var(--ink)}
+  .chip:disabled{opacity:.25;transform:none;box-shadow:var(--shadow)}
+  .ops{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+  .op{
+    font-family:'Space Mono',monospace;font-size:1.25rem;font-weight:700;
+    min-width:52px;padding:7px 0;border:3px solid var(--line);border-radius:14px;
+    background:var(--card);box-shadow:var(--shadow);
+  }
+  .op:active{transform:translateY(4px);box-shadow:0 0 0 var(--ink)}
+  .timerbar{height:14px;border:3px solid var(--line);border-radius:999px;overflow:hidden;background:var(--paper);margin-bottom:14px}
+  .timerbar i{display:block;height:100%;background:var(--leaf);transition:width .5s linear}
+  .timerbar i.hurry{background:var(--coral)}
+
+  /* ---------- market ---------- */
+  .shop-shelf{
+    display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:16px;
+  }
+  .shop-item{
+    border:3px solid var(--line);border-radius:14px;background:var(--amber-soft);
+    box-shadow:var(--shadow);padding:8px 12px;text-align:center;min-width:86px;
+  }
+  .shop-item .em{font-size:1.7rem;display:block}
+  .shop-item .pr{font-family:'Space Mono',monospace;font-size:.8rem;font-weight:700}
+  .shop-item .deal{
+    display:inline-block;background:var(--coral);color:#fff;border-radius:8px;
+    font-size:.68rem;font-weight:800;padding:1px 7px;margin-top:3px;border:2px solid var(--line);
+  }
+  .receipt{
+    border:3px solid var(--line);border-radius:14px;background:#FFFDF4;
+    font-family:'Space Mono',monospace;font-size:.95rem;padding:14px 18px;margin-bottom:14px;
+  }
+  .receipt .row{display:flex;justify-content:space-between;gap:14px}
+  .receipt .rule{border-top:2px dashed var(--ink-soft);margin:8px 0}
+  .mc-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+  .mc-row .btn{font-size:.98rem}
+  @media (max-width:520px){.mc-row{grid-template-columns:1fr}}
+
+  /* ---------- fractions ---------- */
+  .frac-bar-wrap{margin:6px 0 18px}
+  .frac-bar{
+    display:flex;height:56px;border:3px solid var(--line);border-radius:14px;
+    overflow:hidden;background:var(--paper);position:relative;
+  }
+  .frac-bar .seg{flex:1;border-right:1px solid #E9E0CB}
+  .frac-bar .seg:last-child{border-right:0}
+  .frac-bar .fill{
+    position:absolute;inset:0 auto 0 0;background:var(--violet);opacity:.85;
+    transition:width .25s ease;
+  }
+  .frac-bar .target-line{
+    position:absolute;top:-10px;bottom:-10px;width:4px;background:var(--coral);
+    border:1px solid var(--line);border-radius:2px;
+  }
+  .frac-target-label{
+    text-align:center;font-family:'Fredoka',sans-serif;font-size:1.5rem;margin-bottom:10px;
+  }
+  .frac-hand{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:6px}
+  .fcard{
+    font-family:'Space Mono',monospace;font-size:1.1rem;font-weight:700;
+    border:3px solid var(--line);border-radius:14px;background:var(--violet-soft);
+    box-shadow:var(--shadow);padding:10px 16px;
+  }
+  .fcard:active{transform:translateY(4px);box-shadow:0 0 0 var(--ink)}
+  .fcard:disabled{opacity:.25;box-shadow:var(--shadow);transform:none}
+  .frac-placed{min-height:52px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;
+    border:3px dashed var(--ink-soft);border-radius:14px;padding:8px;margin-bottom:12px;align-items:center}
+  .frac-placed .ph{color:var(--ink-soft);font-size:.9rem}
+  .fcard.placed{background:var(--violet);color:#fff}
+  .combo-log{display:flex;flex-direction:column;gap:6px;margin-top:12px;font-family:'Space Mono',monospace;font-size:.9rem}
+  .combo-log .combo{border:2.5px solid var(--line);border-radius:10px;background:var(--leaf-soft);padding:5px 12px}
+
+  /* ---------- grid escape ---------- */
+  .grid-wrap{display:flex;justify-content:center;margin-bottom:14px}
+  .ggrid{border-collapse:collapse}
+  .ggrid td{
+    width:40px;height:40px;border:2px solid var(--ink);background:var(--card);
+    text-align:center;font-family:'Space Mono',monospace;font-size:.72rem;font-weight:700;
+    cursor:pointer;padding:0;
+  }
+  @media (max-width:520px){.ggrid td{width:34px;height:34px}}
+  .ggrid td.axis{background:var(--paper);cursor:default;color:var(--ink-soft);border-color:var(--ink)}
+  .ggrid td.start{background:var(--amber);font-size:1rem}
+  .ggrid td.shape{background:var(--leaf-soft)}
+  .ggrid td.shape.edge{background:var(--leaf)}
+  .ggrid td.picked{background:var(--sky);color:#fff;font-size:1rem}
+  .ggrid td:not(.axis):hover{outline:3px solid var(--violet);outline-offset:-3px}
+  .code-slots{display:flex;gap:10px;justify-content:center;margin:8px 0 4px}
+  .code-slot{
+    width:52px;height:62px;border:3px solid var(--line);border-radius:12px;
+    background:var(--paper);display:flex;align-items:center;justify-content:center;
+    font-family:'Space Mono',monospace;font-size:1.7rem;font-weight:700;box-shadow:var(--shadow);
+  }
+  .code-slot.got{background:var(--leaf-soft)}
+  .angle-fig{display:flex;justify-content:center;margin-bottom:10px}
+  .room-label{
+    display:inline-block;font-family:'Space Mono',monospace;font-size:.72rem;font-weight:700;
+    letter-spacing:.16em;text-transform:uppercase;background:var(--leaf-soft);
+    border:2.5px solid var(--line);border-radius:999px;padding:3px 12px;margin-bottom:8px;
+  }
+
+  /* ---------- codebreaker ---------- */
+  .vault{
+    display:flex;gap:10px;justify-content:center;margin-bottom:18px;
+  }
+  .clue-seq{
+    display:flex;gap:8px;flex-wrap:wrap;justify-content:center;
+    font-family:'Space Mono',monospace;font-size:1.3rem;font-weight:700;margin:12px 0;
+  }
+  .clue-seq .t{
+    border:3px solid var(--line);border-radius:12px;background:var(--sky-soft);
+    padding:8px 14px;box-shadow:var(--shadow);
+  }
+  .clue-seq .t.unk{background:var(--card);border-style:dashed;color:var(--ink-soft)}
+  .clue-eq{
+    text-align:center;font-size:1.9rem;font-weight:800;margin:14px 0;
+    font-family:'Space Mono',monospace;
+  }
+  .vault-door{
+    width:190px;height:190px;margin:0 auto 16px;border:4px solid var(--line);border-radius:50%;
+    background:radial-gradient(circle at 38% 34%,#e8eef3,#b9c6cf);
+    box-shadow:var(--shadow-big);display:flex;align-items:center;justify-content:center;
+    font-size:3.4rem;transition:transform .6s ease;
+  }
+  .vault-door.open{transform:rotate(140deg) scale(1.06)}
+
+  /* confetti */
+  #confetti{position:fixed;inset:0;pointer-events:none;z-index:50}
+  footer{
+    text-align:center;margin-top:44px;color:var(--ink-soft);font-size:.85rem;
+  }
+</style>
+
+<div id="app">
+  <canvas id="confetti"></canvas>
+
+  <!-- ============ HUB ============ -->
+  <section class="screen active" id="screen-hub">
+    <div class="topbar">
+      <span class="badge" id="hub-stars">⭐ 0 / 15</span>
+      <span style="flex:1"></span>
+      <button class="btn small" id="sound-toggle" aria-label="Toggle sound">🔊 Sound</button>
+    </div>
+    <div class="hero">
+      <span class="kicker">Grades 4 – 6 · Five Challenges</span>
+      <h1>Math Quest <span class="spark">Arcade</span></h1>
+      <p>Five mini-games, five ways of thinking. Earn up to three stars in each game and fill your trophy bar!</p>
+    </div>
+    <div class="game-grid">
+      <button class="game-card c-coral" data-game="target">
+        <span class="icon">🎯</span>
+        <span class="tag">Operations</span>
+        <h2>Target Number</h2>
+        <p>Combine four numbers with + − × ÷ to hit the target before time runs out.</p>
+        <span class="stars" data-stars="target">☆☆☆</span>
+      </button>
+      <button class="game-card c-amber" data-game="market">
+        <span class="icon">🏪</span>
+        <span class="tag">Money · % · Decimals</span>
+        <h2>Math Market</h2>
+        <p>You have RM50. Work out discounts, totals and change to finish your shopping list.</p>
+        <span class="stars" data-stars="market">☆☆☆</span>
+      </button>
+      <button class="game-card c-violet" data-game="fractions">
+        <span class="icon">🧩</span>
+        <span class="tag">Fractions</span>
+        <h2>Fraction Builders</h2>
+        <p>Snap fraction pieces together to build the exact amount — then find a second way!</p>
+        <span class="stars" data-stars="fractions">☆☆☆</span>
+      </button>
+      <button class="game-card c-leaf" data-game="grid">
+        <span class="icon">🗺️</span>
+        <span class="tag">Geometry</span>
+        <h2>Escape the Grid</h2>
+        <p>Solve coordinate, perimeter, area and angle rooms to collect the 4-digit escape code.</p>
+        <span class="stars" data-stars="grid">☆☆☆</span>
+      </button>
+      <button class="game-card c-sky" data-game="code">
+        <span class="icon">🔐</span>
+        <span class="tag">Patterns · Algebra</span>
+        <h2>Codebreaker</h2>
+        <p>Crack sequences and emoji equations to open the vault, one digit at a time.</p>
+        <span class="stars" data-stars="code">☆☆☆</span>
+      </button>
+    </div>
+    <footer>Tip for teachers: each game is a different way of thinking — play one per lesson, or run them as stations.</footer>
+  </section>
+
+  <!-- ============ TARGET NUMBER ============ -->
+  <section class="screen" id="screen-target">
+    <div class="topbar">
+      <button class="btn small back">← Menu</button>
+      <span class="title">🎯 Target Number</span>
+      <span class="badge" id="tn-score">0 pts</span>
+    </div>
+    <div class="stage" id="tn-stage"></div>
+  </section>
+
+  <!-- ============ MARKET ============ -->
+  <section class="screen" id="screen-market">
+    <div class="topbar">
+      <button class="btn small back">← Menu</button>
+      <span class="title">🏪 Math Market</span>
+      <span class="badge" id="mk-wallet">RM 50.00</span>
+    </div>
+    <div class="stage" id="mk-stage"></div>
+  </section>
+
+  <!-- ============ FRACTIONS ============ -->
+  <section class="screen" id="screen-fractions">
+    <div class="topbar">
+      <button class="btn small back">← Menu</button>
+      <span class="title">🧩 Fraction Builders</span>
+      <span class="badge" id="fr-progress">Round 1</span>
+    </div>
+    <div class="stage" id="fr-stage"></div>
+  </section>
+
+  <!-- ============ GRID ============ -->
+  <section class="screen" id="screen-grid">
+    <div class="topbar">
+      <button class="btn small back">← Menu</button>
+      <span class="title">🗺️ Escape the Grid</span>
+      <span class="badge" id="gr-room">Room 1</span>
+    </div>
+    <div class="stage" id="gr-stage"></div>
+  </section>
+
+  <!-- ============ CODEBREAKER ============ -->
+  <section class="screen" id="screen-code">
+    <div class="topbar">
+      <button class="btn small back">← Menu</button>
+      <span class="title">🔐 Codebreaker</span>
+      <span class="badge" id="cb-progress">Clue 1</span>
+    </div>
+    <div class="stage" id="cb-stage"></div>
+  </section>
+</div>
+
+<script>
+'use strict';
+/* ============================================================
+   Math Quest Arcade — 5 mini-games for Grades 4–6
+   ============================================================ */
+
+/* ---------- tiny helpers ---------- */
+const $ = (sel, root) => (root || document).querySelector(sel);
+const $$ = (sel, root) => Array.from((root || document).querySelectorAll(sel));
+const ri = (a, b) => a + Math.floor(Math.random() * (b - a + 1)); // inclusive
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+const shuffle = arr => { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const rm = v => 'RM ' + v.toFixed(2);
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+/* ---------- persistence (best-effort) ---------- */
+const store = {
+  get(key, fallback) { try { const v = localStorage.getItem('mqa-' + key); return v === null ? fallback : JSON.parse(v); } catch (e) { return fallback; } },
+  set(key, val) { try { localStorage.setItem('mqa-' + key, JSON.stringify(val)); } catch (e) {} }
+};
+let starBook = store.get('stars', { target: 0, market: 0, fractions: 0, grid: 0, code: 0 });
+
+function paintStars() {
+  let total = 0;
+  for (const k in starBook) {
+    total += starBook[k];
+    const el = $(`[data-stars="${k}"]`);
+    if (el) el.textContent = '★'.repeat(starBook[k]) + '☆'.repeat(3 - starBook[k]);
+  }
+  $('#hub-stars').textContent = `⭐ ${total} / 15`;
+}
+function awardStars(game, stars) {
+  if (stars > (starBook[game] || 0)) { starBook[game] = stars; store.set('stars', starBook); }
+  paintStars();
+}
+const starLine = n => '★'.repeat(n) + '☆'.repeat(3 - n);
+
+/* ---------- sound (WebAudio blips) ---------- */
+let soundOn = store.get('sound', true);
+let audioCtx = null;
+function blip(freqs, dur, type) {
+  if (!soundOn) return;
+  try {
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const t0 = audioCtx.currentTime;
+    freqs.forEach((f, i) => {
+      const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = type || 'triangle'; o.frequency.value = f;
+      g.gain.setValueAtTime(0.12, t0 + i * dur);
+      g.gain.exponentialRampToValueAtTime(0.001, t0 + (i + 1) * dur);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(t0 + i * dur); o.stop(t0 + (i + 1) * dur + 0.02);
+    });
+  } catch (e) {}
+}
+const sfx = {
+  tap: () => blip([420], 0.07, 'square'),
+  good: () => blip([523, 659, 784], 0.11),
+  bad: () => blip([196, 155], 0.16, 'sawtooth'),
+  win: () => blip([523, 659, 784, 1047, 1319], 0.13)
+};
+function paintSound() { $('#sound-toggle').textContent = soundOn ? '🔊 Sound' : '🔇 Muted'; }
+$('#sound-toggle').addEventListener('click', () => { soundOn = !soundOn; store.set('sound', soundOn); paintSound(); if (soundOn) sfx.tap(); });
+
+/* ---------- confetti ---------- */
+const confettiCv = $('#confetti'), cfx = confettiCv.getContext('2d');
+let confettiBits = [];
+function resizeConfetti() { confettiCv.width = innerWidth; confettiCv.height = innerHeight; }
+addEventListener('resize', resizeConfetti); resizeConfetti();
+function throwConfetti() {
+  const colors = ['#FF6300', '#E410AF', '#4F5BFD', '#2826AD', '#FFC46B'];
+  for (let i = 0; i < 90; i++) {
+    confettiBits.push({
+      x: Math.random() * confettiCv.width, y: -20 - Math.random() * 140,
+      vy: 2 + Math.random() * 3.4, vx: -1.4 + Math.random() * 2.8,
+      s: 6 + Math.random() * 7, r: Math.random() * Math.PI, vr: -0.16 + Math.random() * 0.32,
+      c: pick(colors)
+    });
+  }
+  if (!confettiTick.running) { confettiTick.running = true; requestAnimationFrame(confettiTick); }
+}
+function confettiTick() {
+  cfx.clearRect(0, 0, confettiCv.width, confettiCv.height);
+  confettiBits = confettiBits.filter(b => b.y < confettiCv.height + 30);
+  for (const b of confettiBits) {
+    b.x += b.vx; b.y += b.vy; b.r += b.vr;
+    cfx.save(); cfx.translate(b.x, b.y); cfx.rotate(b.r);
+    cfx.fillStyle = b.c; cfx.fillRect(-b.s / 2, -b.s / 2, b.s, b.s * 0.62);
+    cfx.restore();
+  }
+  if (confettiBits.length) requestAnimationFrame(confettiTick);
+  else confettiTick.running = false;
+}
+
+/* ---------- screen router ---------- */
+const games = {}; // filled below: {init(), leave()?}
+let currentScreen = 'hub';
+function showScreen(name) {
+  const leaving = games[currentScreen];
+  if (leaving && leaving.leave) leaving.leave();
+  currentScreen = name;
+  $$('.screen').forEach(s => s.classList.remove('active'));
+  $('#screen-' + name).classList.add('active');
+  window.scrollTo(0, 0);
+  if (games[name] && games[name].init) games[name].init();
+}
+$$('.game-card').forEach(card => card.addEventListener('click', () => { sfx.tap(); showScreen(card.dataset.game); }));
+$$('.back').forEach(b => b.addEventListener('click', () => { sfx.tap(); showScreen('hub'); }));
+
+/* ---------- shared end screen ---------- */
+function endCard(stageEl, opts) {
+  // opts: {emoji,title,lines:[],stars,onReplay}
+  stageEl.innerHTML = `
+    <div class="endcard">
+      <div class="big">${opts.emoji}</div>
+      <h2>${esc(opts.title)}</h2>
+      <div class="starline">${starLine(opts.stars)}</div>
+      ${opts.lines.map(l => `<p>${l}</p>`).join('')}
+      <div class="pillrow" style="justify-content:center;margin-top:10px">
+        <button class="btn primary" id="end-replay">Play again</button>
+        <button class="btn" id="end-menu">Back to menu</button>
+      </div>
+    </div>`;
+  $('#end-replay', stageEl).addEventListener('click', () => { sfx.tap(); opts.onReplay(); });
+  $('#end-menu', stageEl).addEventListener('click', () => { sfx.tap(); showScreen('hub'); });
+  if (opts.stars >= 2) { throwConfetti(); sfx.win(); }
+}
+
+/* ============================================================
+   🎯 1. TARGET NUMBER
+   ============================================================ */
+games.target = (() => {
+  const ROUNDS = 5, TIME = 75;
+  let state = null, timerId = null;
+  const stage = () => $('#tn-stage');
+
+  function genPuzzle() {
+    for (let attempt = 0; attempt < 400; attempt++) {
+      const nums = [ri(1, 9), ri(1, 9), ri(1, 9), ri(2, 9)];
+      let vals = nums.map(n => ({ v: n, s: String(n) })), dead = false;
+      while (vals.length > 1) {
+        const a = vals.splice(ri(0, vals.length - 1), 1)[0];
+        const b = vals.splice(ri(0, vals.length - 1), 1)[0];
+        let placed = false;
+        for (const op of shuffle(['+', '-', '*', '/'])) {
+          let r = null;
+          if (op === '+') r = a.v + b.v;
+          else if (op === '-') r = a.v - b.v;
+          else if (op === '*') r = a.v * b.v;
+          else if (b.v !== 0 && a.v % b.v === 0) r = a.v / b.v;
+          if (r !== null && Number.isInteger(r) && r > 0 && r <= 400) {
+            vals.push({ v: r, s: '(' + a.s + ' ' + (op === '*' ? '×' : op === '/' ? '÷' : op) + ' ' + b.s + ')' });
+            placed = true; break;
+          }
+        }
+        if (!placed) { dead = true; break; }
+      }
+      if (dead) continue;
+      const t = vals[0];
+      if (t.v >= 12 && t.v <= 99 && !nums.includes(t.v)) {
+        return { nums, target: t.v, solution: t.s.replace(/^\(|\)$/g, '') };
+      }
+    }
+    // safe fallback
+    return { nums: [2, 3, 4, 6], target: 36, solution: '(2 + 4) × 6 × 3 ÷ 3' };
+  }
+
+  function evalTokens(tokens) {
+    let pos = 0;
+    function expr() {
+      let v = term();
+      while (pos < tokens.length && (tokens[pos].v === '+' || tokens[pos].v === '−')) {
+        const op = tokens[pos++].v; const r = term();
+        v = op === '+' ? v + r : v - r;
+      }
+      return v;
+    }
+    function term() {
+      let v = factor();
+      while (pos < tokens.length && (tokens[pos].v === '×' || tokens[pos].v === '÷')) {
+        const op = tokens[pos++].v; const r = factor();
+        if (op === '÷') { if (r === 0) throw new Error('div0'); v = v / r; }
+        else v = v * r;
+      }
+      return v;
+    }
+    function factor() {
+      const t = tokens[pos];
+      if (!t) throw new Error('end');
+      if (t.v === '(') { pos++; const v = expr(); if (!tokens[pos] || tokens[pos].v !== ')') throw new Error('paren'); pos++; return v; }
+      if (t.t === 'num') { pos++; return t.n; }
+      throw new Error('tok');
+    }
+    const v = expr();
+    if (pos !== tokens.length) throw new Error('extra');
+    return v;
+  }
+
+  function init() {
+    state = { round: 0, score: 0, solved: 0 };
+    nextRound();
+  }
+  function leave() { clearInterval(timerId); timerId = null; }
+
+  function nextRound() {
+    clearInterval(timerId);
+    if (state.round >= ROUNDS) return finish();
+    state.round++;
+    state.puzzle = genPuzzle();
+    state.tokens = [];
+    state.used = new Array(4).fill(false);
+    state.time = TIME;
+    render();
+    timerId = setInterval(() => {
+      state.time--;
+      const bar = $('#tn-timer');
+      if (bar) {
+        bar.style.width = (state.time / TIME * 100) + '%';
+        bar.classList.toggle('hurry', state.time <= 15);
+      }
+      const lab = $('#tn-timelabel');
+      if (lab) lab.textContent = state.time + 's';
+      if (state.time <= 0) { clearInterval(timerId); timeUp(); }
+    }, 1000);
+  }
+
+  function render() {
+    const p = state.puzzle;
+    stage().innerHTML = `
+      <div class="stage-head">
+        <div class="progress-dots">${dots(state.round, ROUNDS)}</div>
+        <span style="flex:1"></span>
+        <span class="badge" id="tn-timelabel">${state.time}s</span>
+      </div>
+      <div class="timerbar"><i id="tn-timer" style="width:100%"></i></div>
+      <div class="tn-target"><span class="display" style="font-size:1.1rem">Make</span><span class="num">${p.target}</span></div>
+      <div class="tn-expr" id="tn-expr"></div>
+      <div class="tn-live" id="tn-live"></div>
+      <div class="chips" id="tn-chips">
+        ${p.nums.map((n, i) => `<button class="chip" data-i="${i}">${n}</button>`).join('')}
+      </div>
+      <div class="ops">
+        ${['+', '−', '×', '÷', '(', ')'].map(o => `<button class="op" data-op="${o}">${o}</button>`).join('')}
+        <button class="op" data-op="back" aria-label="Undo">⌫</button>
+        <button class="op" data-op="clear" aria-label="Clear">✕</button>
+      </div>
+      <div class="answer-row" style="justify-content:center">
+        <button class="btn primary" id="tn-check">Check!</button>
+        <button class="btn" id="tn-skip">Show me a way →</button>
+      </div>
+      <div class="feedback" id="tn-fb" aria-live="polite"></div>
+      <p style="color:var(--ink-soft);font-size:.88rem;margin-top:4px">Use <strong>every number exactly once</strong>. Brackets are allowed — remember the order of operations!</p>
+    `;
+    $('#tn-chips').addEventListener('click', e => {
+      const b = e.target.closest('.chip'); if (!b || b.disabled) return;
+      sfx.tap();
+      const i = +b.dataset.i;
+      state.tokens.push({ t: 'num', n: p.nums[i], chip: i });
+      state.used[i] = true;
+      paintExpr();
+    });
+    $$('.op', stage()).forEach(b => b.addEventListener('click', () => {
+      sfx.tap();
+      const op = b.dataset.op;
+      if (op === 'clear') { state.tokens = []; state.used.fill(false); }
+      else if (op === 'back') {
+        const t = state.tokens.pop();
+        if (t && t.t === 'num') state.used[t.chip] = false;
+      }
+      else state.tokens.push({ t: 'op', v: op });
+      paintExpr();
+    }));
+    $('#tn-check').addEventListener('click', check);
+    $('#tn-skip').addEventListener('click', () => { clearInterval(timerId); reveal(false); });
+    paintExpr();
+  }
+
+  const dots = (now, total) => Array.from({ length: total }, (_, i) =>
+    `<span class="${i < now - 1 ? 'done' : i === now - 1 ? 'now' : ''}"></span>`).join('');
+
+  function exprText() {
+    return state.tokens.map(t => t.t === 'num' ? t.n : t.v).join(' ');
+  }
+  function paintExpr() {
+    const box = $('#tn-expr');
+    box.innerHTML = state.tokens.length ? esc(exprText()) : '<span class="ph">Tap numbers and signs to build your expression</span>';
+    $$('.chip', stage()).forEach((c, i) => { c.disabled = state.used[i]; });
+    // live value preview
+    const live = $('#tn-live');
+    try {
+      if (state.tokens.length) {
+        const v = evalTokens(state.tokens);
+        const niceV = Math.abs(v - Math.round(v)) < 1e-9 ? Math.round(v) : (Math.round(v * 100) / 100);
+        const hit = Math.abs(v - state.puzzle.target) < 1e-9 && state.used.every(Boolean);
+        live.innerHTML = `= <span class="${hit ? 'hit' : ''}">${niceV}</span>`;
+      } else live.textContent = '';
+    } catch (e) { live.textContent = '= …'; }
+  }
+
+  function check() {
+    const fb = $('#tn-fb');
+    if (!state.used.every(Boolean)) {
+      fb.className = 'feedback bad'; fb.textContent = '🤔 Use all four numbers!'; sfx.bad(); return;
+    }
+    let v;
+    try { v = evalTokens(state.tokens); }
+    catch (e) { fb.className = 'feedback bad'; fb.textContent = '😵 That expression doesn’t make sense yet — check your signs and brackets.'; sfx.bad(); return; }
+    if (Math.abs(v - state.puzzle.target) < 1e-9) {
+      clearInterval(timerId);
+      const bonus = Math.max(0, state.time);
+      state.score += 100 + bonus; state.solved++;
+      $('#tn-score').textContent = state.score + ' pts';
+      fb.className = 'feedback good';
+      fb.textContent = `🎉 Bullseye! ${esc(exprText())} = ${state.puzzle.target}  (+${100 + bonus} pts)`;
+      sfx.good();
+      setTimeout(nextRound, 1600);
+    } else {
+      const niceV = Math.abs(v - Math.round(v)) < 1e-9 ? Math.round(v) : v.toFixed(2);
+      fb.className = 'feedback bad';
+      fb.textContent = `❌ That makes ${niceV}, not ${state.puzzle.target}. Try again!`;
+      sfx.bad();
+    }
+  }
+
+  function timeUp() { reveal(true); }
+  function reveal(timed) {
+    const fb = $('#tn-fb');
+    fb.className = 'feedback bad';
+    fb.innerHTML = `${timed ? '⏰ Time’s up!' : '💡'} One way: <span class="mono" style="margin-left:6px">${esc(state.puzzle.solution)} = ${state.puzzle.target}</span>`;
+    $('#tn-check').disabled = true; $('#tn-skip').disabled = true;
+    setTimeout(nextRound, 2600);
+  }
+
+  function finish() {
+    clearInterval(timerId);
+    const stars = state.solved >= 5 ? 3 : state.solved >= 3 ? 2 : state.solved >= 1 ? 1 : 0;
+    awardStars('target', stars);
+    endCard(stage(), {
+      emoji: state.solved >= 3 ? '🏆' : '🎯',
+      title: state.solved === ROUNDS ? 'Perfect aim!' : `You hit ${state.solved} of ${ROUNDS} targets`,
+      lines: [`Final score: <strong>${state.score} points</strong> — solve faster for bigger time bonuses.`],
+      stars,
+      onReplay: init
+    });
+  }
+
+  return { init, leave };
+})();
+
+/* ============================================================
+   🏪 2. MATH MARKET
+   ============================================================ */
+games.market = (() => {
+  const stage = () => $('#mk-stage');
+  let state = null;
+
+  const CATALOG = [
+    { em: '🎮', name: 'video game', price: 40 },
+    { em: '🧸', name: 'teddy bear', price: 24 },
+    { em: '🎧', name: 'headphones', price: 36 },
+    { em: '📚', name: 'comic book', price: 12.5 },
+    { em: '⚽', name: 'football', price: 18 },
+    { em: '🍕', name: 'pizza slice', price: 4.5 },
+    { em: '🥤', name: 'juice', price: 3.2 },
+    { em: '🖍️', name: 'crayon set', price: 6.4 },
+    { em: '🎒', name: 'backpack', price: 32 },
+    { em: '🍦', name: 'ice cream', price: 2.8 }
+  ];
+
+  function genRounds() {
+    const rounds = [];
+    // 1. percent discount (big item) — pairs chosen so the sale price stays ≤ RM18
+    {
+      const combo = pick([
+        { item: CATALOG[1], off: 25 }, // teddy 24 → 18
+        { item: CATALOG[8], off: 50 }, // backpack 32 → 16
+        { item: CATALOG[2], off: 50 }  // headphones 36 → 18
+      ]);
+      const item = combo.item, off = combo.off;
+      const ans = item.price * (1 - off / 100);
+      rounds.push({
+        type: 'input', pay: ans, item,
+        deal: off + '% OFF',
+        q: `The ${item.name} ${item.em} costs <strong>${rm(item.price)}</strong>, but today it is <strong>${off}% off</strong>. How much do you pay?`,
+        answer: ans, unit: 'RM',
+        hint: `${off}% of ${rm(item.price)} is RM ${(item.price * off / 100).toFixed(2)} — subtract that from the price.`
+      });
+    }
+    // 2. fraction discount — sale price stays ≤ RM12
+    {
+      const combo = pick([
+        { item: CATALOG[4], frac: { t: '1/3', v: 1 / 3 } }, // football 18 → 12
+        { item: CATALOG[3], frac: { t: '1/2', v: 0.5 } },   // comic 12.50 → 6.25
+        { item: CATALOG[7], frac: { t: '1/4', v: 0.25 } }   // crayons 6.40 → 4.80
+      ]);
+      const item = combo.item, frac = combo.frac;
+      const price = item.price;
+      const ans = Math.round(price * (1 - frac.v) * 100) / 100;
+      rounds.push({
+        type: 'input', pay: ans, item: { ...item, price },
+        deal: frac.t + ' OFF',
+        q: `The ${item.name} ${item.em} costs <strong>${rm(price)}</strong> with <strong>${frac.t} off</strong>. What do you pay?`,
+        answer: ans, unit: 'RM',
+        hint: `${frac.t} of RM ${price.toFixed(2)} comes off the price. What is left?`
+      });
+    }
+    // 3. total of two decimal items (small treats, ≤ RM10 together)
+    {
+      const a = CATALOG[7], b = pick([CATALOG[6], CATALOG[9]]);
+      const ans = Math.round((a.price + b.price) * 100) / 100;
+      rounds.push({
+        type: 'input', pay: ans, item: a, item2: b,
+        q: `You buy the ${a.name} ${a.em} (${rm(a.price)}) <em>and</em> the ${b.name} ${b.em} (${rm(b.price)}). What is the total?`,
+        answer: ans, unit: 'RM',
+        hint: 'Line up the decimal points and add.'
+      });
+    }
+    // 4. change from RM20 (small treats so the whole trip fits in RM50)
+    {
+      const item = pick([CATALOG[6], CATALOG[9]]);
+      const qty = ri(2, 3);
+      const total = Math.round(item.price * qty * 100) / 100;
+      const ans = 20 - total;
+      rounds.push({
+        type: 'input', pay: total, item, qty,
+        q: `You buy <strong>${qty} ${item.name}s</strong> ${item.em} at ${rm(item.price)} each and pay with a <strong>RM20 note</strong>. How much change do you get?`,
+        answer: ans, unit: 'RM',
+        hint: `First find the total: ${qty} × RM ${item.price.toFixed(2)} = RM ${total.toFixed(2)}. Then subtract from RM 20.`
+      });
+    }
+    // 5. best deal (multiple choice)
+    {
+      const unit = pick([
+        { name: 'pens', a: { n: 3, p: 9 }, b: { n: 5, p: 12.5 } },
+        { name: 'stickers', a: { n: 4, p: 6 }, b: { n: 6, p: 8.4 } },
+        { name: 'marbles', a: { n: 2, p: 5 }, b: { n: 5, p: 11 } }
+      ]);
+      const ua = unit.a.p / unit.a.n, ub = unit.b.p / unit.b.n;
+      const best = ua < ub ? 'A' : 'B';
+      rounds.push({
+        type: 'mc', pay: 0,
+        q: `Window shopping! Which pack of ${unit.name} is the <strong>better deal</strong> (cheaper per ${unit.name.slice(0, -1)})? You don’t buy — just compare.`,
+        options: [
+          { label: `Pack A — ${unit.a.n} for ${rm(unit.a.p)}`, correct: best === 'A' },
+          { label: `Pack B — ${unit.b.n} for ${rm(unit.b.p)}`, correct: best === 'B' }
+        ],
+        explain: `Pack A: ${rm(unit.a.p)} ÷ ${unit.a.n} = ${rm(ua)} each. Pack B: ${rm(unit.b.p)} ÷ ${unit.b.n} = ${rm(ub)} each.`
+      });
+    }
+    // 6. unit price
+    {
+      const item = pick([CATALOG[6], CATALOG[9]]);
+      const qty = pick([4, 5]);
+      const each = item.price;
+      const total = Math.round(each * qty * 100) / 100;
+      rounds.push({
+        type: 'input', pay: 0, item,
+        q: `Price check: ${qty} ${item.name}s ${item.em} cost <strong>${rm(total)}</strong> altogether. How much is <strong>one</strong>?`,
+        answer: each, unit: 'RM',
+        hint: `Divide: RM ${total.toFixed(2)} ÷ ${qty}.`
+      });
+    }
+    return rounds;
+  }
+
+  function init() {
+    state = { wallet: 50, round: 0, correct: 0, attempts: 0, rounds: genRounds() };
+    paintWallet();
+    nextRound();
+  }
+  function paintWallet() { $('#mk-wallet').textContent = rm(state.wallet); }
+
+  function shelfHTML(r) {
+    const items = [r.item, r.item2].filter(Boolean);
+    if (!items.length) return '';
+    return `<div class="shop-shelf">${items.map(it => `
+      <div class="shop-item">
+        <span class="em">${it.em}</span>
+        <span class="pr">${rm(it.price)}</span>
+        ${r.deal ? `<span class="deal">${esc(r.deal)}</span>` : ''}
+      </div>`).join('')}</div>`;
+  }
+
+  function nextRound() {
+    if (state.round >= state.rounds.length) return finish();
+    const r = state.rounds[state.round];
+    state.round++;
+    state.tries = 0;
+    stage().innerHTML = `
+      <div class="stage-head">
+        <div class="progress-dots">${Array.from({ length: state.rounds.length }, (_, i) => `<span class="${i < state.round - 1 ? 'done' : i === state.round - 1 ? 'now' : ''}"></span>`).join('')}</div>
+        <div class="prompt">${r.q}</div>
+      </div>
+      ${shelfHTML(r)}
+      ${r.type === 'input' ? `
+        <div class="answer-row">
+          <input id="mk-in" inputmode="decimal" autocomplete="off" placeholder="${r.unit === 'RM' ? 'RM  0.00' : '?'}" aria-label="Your answer">
+          <button class="btn primary" id="mk-go">Pay 💰</button>
+        </div>` : `
+        <div class="mc-row">
+          ${r.options.map((o, i) => `<button class="btn" data-mc="${i}">${esc(o.label)}</button>`).join('')}
+        </div>`}
+      <div class="feedback" id="mk-fb" aria-live="polite"></div>
+    `;
+    if (r.type === 'input') {
+      const go = () => checkInput(r);
+      $('#mk-go').addEventListener('click', go);
+      $('#mk-in').addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+      $('#mk-in').focus();
+    } else {
+      $$('.mc-row .btn', stage()).forEach(b => b.addEventListener('click', () => checkMC(r, r.options[+b.dataset.mc], b)));
+    }
+  }
+
+  function settle(r, correct) {
+    if (correct) state.correct++;
+    state.wallet = Math.max(0, Math.round((state.wallet - r.pay) * 100) / 100);
+    paintWallet();
+    setTimeout(nextRound, correct ? 1500 : 2900);
+  }
+
+  function checkInput(r) {
+    const fb = $('#mk-fb');
+    const raw = $('#mk-in').value.replace(/rm/i, '').replace(/,/g, '.').trim();
+    const v = parseFloat(raw);
+    if (isNaN(v)) { fb.className = 'feedback bad'; fb.textContent = 'Type a number, e.g. 12.50'; return; }
+    if (Math.abs(v - r.answer) < 0.005) {
+      fb.className = 'feedback good';
+      fb.textContent = r.pay > 0 ? `✅ Correct! You pay ${rm(r.pay)}.` : `✅ Correct! ${rm(r.answer)} it is.`;
+      sfx.good();
+      $('#mk-go').disabled = true;
+      settle(r, true);
+    } else {
+      state.tries++;
+      sfx.bad();
+      fb.className = 'feedback bad';
+      if (state.tries === 1) {
+        fb.textContent = `❌ Not quite. Hint: ${r.hint}`;
+      } else {
+        fb.textContent = `💸 The answer was ${rm(r.answer)}. ${r.hint}`;
+        $('#mk-go').disabled = true;
+        settle(r, false);
+      }
+    }
+  }
+
+  function checkMC(r, opt, btn) {
+    const fb = $('#mk-fb');
+    if (opt.correct) {
+      fb.className = 'feedback good';
+      fb.textContent = `✅ Smart shopper! ${r.explain}`;
+      sfx.good();
+      $$('.mc-row .btn', stage()).forEach(b => b.disabled = true);
+      settle(r, true);
+    } else {
+      state.tries++;
+      sfx.bad();
+      fb.className = 'feedback bad';
+      if (state.tries === 1) fb.textContent = '❌ Compare the price of ONE item in each pack. Try again!';
+      else {
+        fb.textContent = `❌ ${r.explain}`;
+        $$('.mc-row .btn', stage()).forEach(b => b.disabled = true);
+        settle(r, false);
+      }
+    }
+  }
+
+  function finish() {
+    const n = state.rounds.length;
+    const stars = state.correct >= n ? 3 : state.correct >= n - 2 ? 2 : state.correct >= 2 ? 1 : 0;
+    awardStars('market', stars);
+    endCard(stage(), {
+      emoji: stars >= 2 ? '🛍️' : '🏪',
+      title: `Shopping done — ${state.correct} of ${n} correct!`,
+      lines: [
+        `Money left in your wallet: <strong class="mono">${rm(state.wallet)}</strong>`,
+        'Every price you calculate right is money you never overpay. Math = superpower. 💪'
+      ],
+      stars,
+      onReplay: init
+    });
+  }
+
+  return { init };
+})();
+
+/* ============================================================
+   🧩 3. FRACTION BUILDERS
+   ============================================================ */
+games.fractions = (() => {
+  const stage = () => $('#fr-stage');
+  const U = 24; // all pieces measured in 24ths
+  // hand entries: [numerator, denominator]
+  const ROUNDS = [
+    { target: [3, 4], hand: [[1, 2], [1, 4], [1, 4], [1, 4], [1, 8], [1, 8]], ways: 2 },
+    { target: [2, 3], hand: [[1, 3], [1, 3], [1, 6], [1, 6], [1, 6], [1, 6]], ways: 2 },
+    { target: [5, 6], hand: [[1, 2], [1, 3], [1, 3], [1, 6], [1, 6], [1, 6]], ways: 2 },
+    { target: [7, 12], hand: [[1, 4], [1, 4], [1, 3], [1, 6], [1, 12], [1, 12]], ways: 2 },
+    { target: [1, 1], hand: [[1, 2], [1, 2], [1, 4], [1, 4], [1, 3], [1, 6]], ways: 2 }
+  ];
+  let state = null;
+
+  const units = ([n, d]) => n * U / d;
+  const fstr = ([n, d]) => d === 1 ? String(n) : `${n}/${d}`;
+
+  function init() {
+    state = { round: 0, totalWays: 0 };
+    nextRound();
+  }
+
+  function nextRound() {
+    if (state.round >= ROUNDS.length) return finish();
+    const r = ROUNDS[state.round];
+    state.round++;
+    state.r = r;
+    state.placed = [];          // indexes into hand
+    state.found = [];           // combo keys found this round
+    $('#fr-progress').textContent = `Round ${state.round} / ${ROUNDS.length}`;
+    render();
+  }
+
+  function comboKey() {
+    return state.placed.map(i => fstr(state.r.hand[i])).sort().join('+');
+  }
+  function placedUnits() {
+    return state.placed.reduce((s, i) => s + units(state.r.hand[i]), 0);
+  }
+
+  function render() {
+    const r = state.r;
+    stage().innerHTML = `
+      <div class="stage-head">
+        <div class="progress-dots">${Array.from({ length: ROUNDS.length }, (_, i) => `<span class="${i < state.round - 1 ? 'done' : i === state.round - 1 ? 'now' : ''}"></span>`).join('')}</div>
+        <span style="flex:1"></span>
+        <span class="badge">Find ${r.ways} ways</span>
+      </div>
+      <div class="frac-target-label">Build exactly <span style="color:var(--violet)">${fstr(r.target)}</span></div>
+      <div class="frac-bar-wrap">
+        <div class="frac-bar" id="fr-bar" aria-label="Fraction bar">
+          ${Array.from({ length: U }, () => '<span class="seg"></span>').join('')}
+          <span class="fill" id="fr-fill" style="width:0%"></span>
+          <span class="target-line" style="left:calc(${units(r.target) / U * 100}% - 2px)"></span>
+        </div>
+      </div>
+      <div class="frac-placed" id="fr-placed"><span class="ph">Tap pieces below to add them here</span></div>
+      <div class="frac-hand" id="fr-hand">
+        ${r.hand.map((f, i) => `<button class="fcard" data-i="${i}">${fstr(f)}</button>`).join('')}
+      </div>
+      <div class="answer-row" style="justify-content:center">
+        <button class="btn primary" id="fr-check">Check my build</button>
+        <button class="btn" id="fr-reset">Reset pieces</button>
+      </div>
+      <div class="feedback" id="fr-fb" aria-live="polite"></div>
+      <div class="combo-log" id="fr-log"></div>
+      <p style="color:var(--ink-soft);font-size:.88rem;margin-top:8px">The red line shows your target. Different pieces can build the <em>same</em> amount — that’s what <strong>equivalent fractions</strong> are all about.</p>
+    `;
+    $('#fr-hand').addEventListener('click', e => {
+      const b = e.target.closest('.fcard'); if (!b || b.disabled) return;
+      sfx.tap();
+      state.placed.push(+b.dataset.i);
+      paint();
+    });
+    $('#fr-placed').addEventListener('click', e => {
+      const b = e.target.closest('.fcard'); if (!b) return;
+      sfx.tap();
+      state.placed.splice(+b.dataset.pos, 1);
+      paint();
+    });
+    $('#fr-check').addEventListener('click', check);
+    $('#fr-reset').addEventListener('click', () => { sfx.tap(); state.placed = []; paint(); });
+    paintLog();
+    paint();
+  }
+
+  function paint() {
+    const r = state.r;
+    const u = placedUnits();
+    $('#fr-fill').style.width = Math.min(100, u / U * 100) + '%';
+    $('#fr-fill').style.background = u > units(r.target) ? 'var(--coral)' : 'var(--violet)';
+    const box = $('#fr-placed');
+    box.innerHTML = state.placed.length
+      ? state.placed.map((hi, pos) => `<button class="fcard placed" data-pos="${pos}" title="Tap to remove">${fstr(r.hand[hi])}</button>`).join('')
+      : '<span class="ph">Tap pieces below to add them here</span>';
+    $$('#fr-hand .fcard').forEach((b, i) => { b.disabled = state.placed.includes(i); });
+  }
+
+  function paintLog() {
+    $('#fr-log').innerHTML = state.found.map(k => `<span class="combo">✔ ${esc(k.replace(/\+/g, ' + '))} = ${fstr(state.r.target)}</span>`).join('');
+  }
+
+  function check() {
+    const r = state.r, fb = $('#fr-fb');
+    const u = placedUnits(), tu = units(r.target);
+    if (!state.placed.length) { fb.className = 'feedback bad'; fb.textContent = 'Add some pieces first!'; return; }
+    if (u === tu) {
+      const key = comboKey();
+      if (state.found.includes(key)) {
+        fb.className = 'feedback bad';
+        fb.textContent = '♻️ You already found that combination — try a different mix of pieces!';
+        sfx.bad();
+        return;
+      }
+      state.found.push(key);
+      state.totalWays++;
+      paintLog();
+      sfx.good();
+      if (state.found.length >= r.ways) {
+        fb.className = 'feedback good';
+        fb.textContent = `🌟 ${r.ways} different ways — you’ve mastered ${fstr(r.target)}!`;
+        setTimeout(nextRound, 1700);
+      } else {
+        fb.className = 'feedback good';
+        fb.textContent = `✅ Yes! Now find another way to build ${fstr(r.target)} with different pieces.`;
+        state.placed = [];
+        paint();
+      }
+    } else if (u < tu) {
+      fb.className = 'feedback bad';
+      fb.textContent = `📏 Not there yet — you’re ${tu - u}/24 short of the red line.`;
+      sfx.bad();
+    } else {
+      fb.className = 'feedback bad';
+      fb.textContent = `📏 Too much! You went ${u - tu}/24 past the red line. Remove a piece.`;
+      sfx.bad();
+    }
+  }
+
+  function finish() {
+    const need = ROUNDS.reduce((s, r) => s + r.ways, 0);
+    const stars = state.totalWays >= need ? 3 : state.totalWays >= need - 3 ? 2 : 1;
+    awardStars('fractions', stars);
+    endCard(stage(), {
+      emoji: '🧩',
+      title: 'All fractions built!',
+      lines: [`You found <strong>${state.totalWays}</strong> different combinations across ${ROUNDS.length} rounds.`,
+        'Same amount, different pieces — that’s equivalent fractions!'],
+      stars,
+      onReplay: init
+    });
+  }
+
+  return { init };
+})();
+
+/* ============================================================
+   🗺️ 4. ESCAPE THE GRID
+   ============================================================ */
+games.grid = (() => {
+  const stage = () => $('#gr-stage');
+  const N = 8; // grid 0..7
+  let state = null;
+
+  function init() {
+    state = {
+      room: 0,
+      code: Array.from({ length: 4 }, () => ri(0, 9)),
+      got: [],
+      mistakes: 0
+    };
+    nextRoom();
+  }
+
+  const roomNames = ['Coordinates', 'Perimeter', 'Area', 'Angles', 'The Door'];
+
+  function slotsHTML() {
+    return `<div class="code-slots" aria-label="Escape code so far">
+      ${state.code.map((d, i) => `<span class="code-slot ${i < state.got.length ? 'got' : ''}">${i < state.got.length ? state.got[i] : '·'}</span>`).join('')}
+    </div>
+    <p style="text-align:center;color:var(--ink-soft);font-size:.85rem;margin-bottom:14px">Each room you solve reveals one digit of the escape code.</p>`;
+  }
+
+  function head(extra) {
+    $('#gr-room').textContent = state.room < 4 ? `Room ${state.room + 1} / 4` : 'Final door';
+    return `<span class="room-label">Room ${Math.min(state.room + 1, 4)} · ${roomNames[state.room]}</span>${slotsHTML()}${extra || ''}`;
+  }
+
+  function gridHTML(marks) {
+    // marks: {start:[x,y], shapeCells:Set('x,y'), showCoords:bool}
+    let html = '<div class="grid-wrap"><table class="ggrid" role="grid"><tbody>';
+    for (let y = N - 1; y >= 0; y--) {
+      html += '<tr>';
+      html += `<td class="axis">${y}</td>`;
+      for (let x = 0; x < N; x++) {
+        const cls = [];
+        if (marks.start && marks.start[0] === x && marks.start[1] === y) cls.push('start');
+        if (marks.shape && marks.shape.has(x + ',' + y)) cls.push('shape');
+        html += `<td class="${cls.join(' ')}" data-x="${x}" data-y="${y}">${cls.includes('start') ? '🧭' : ''}</td>`;
+      }
+      html += '</tr>';
+    }
+    html += '<tr><td class="axis"></td>' + Array.from({ length: N }, (_, x) => `<td class="axis">${x}</td>`).join('') + '</tr>';
+    html += '</tbody></table></div>';
+    return html;
+  }
+
+  function revealDigit(cb) {
+    const d = state.code[state.got.length];
+    state.got.push(d);
+    sfx.good();
+    setTimeout(cb, 1500);
+  }
+
+  function nextRoom() {
+    if (state.room === 0) roomCoords();
+    else if (state.room === 1) roomPerimeter();
+    else if (state.room === 2) roomArea();
+    else if (state.room === 3) roomAngle();
+    else roomDoor();
+  }
+
+  /* Room 1 — coordinates */
+  function roomCoords() {
+    const sx = ri(0, 3), sy = ri(0, 3);
+    const dx = ri(1, N - 1 - sx), dy = ri(1, N - 1 - sy);
+    const tx = sx + dx, ty = sy + dy;
+    stage().innerHTML = head(`
+      <div class="prompt" style="margin-bottom:10px">You start at <strong class="mono">(${sx}, ${sy})</strong> 🧭.
+      Move <strong>${dx} right</strong> and <strong>${dy} up</strong>.<br>Click the square where you land!</div>
+      ${gridHTML({ start: [sx, sy] })}
+      <div class="feedback" id="gr-fb" aria-live="polite"></div>
+      <p style="color:var(--ink-soft);font-size:.85rem">Coordinates are written (x, y): <strong>across first, then up</strong>.</p>
+    `);
+    $('.ggrid', stage()).addEventListener('click', e => {
+      const td = e.target.closest('td'); if (!td || td.classList.contains('axis')) return;
+      const x = +td.dataset.x, y = +td.dataset.y;
+      const fb = $('#gr-fb');
+      if (x === tx && y === ty) {
+        td.classList.add('picked'); td.textContent = '⭐';
+        fb.className = 'feedback good';
+        fb.textContent = `✅ You landed on (${tx}, ${ty})! Digit revealed…`;
+        state.room++;
+        revealDigit(nextRoom);
+      } else {
+        state.mistakes++;
+        sfx.bad();
+        fb.className = 'feedback bad';
+        fb.textContent = `❌ That’s (${x}, ${y}). Count ${dx} across from ${sx}, then ${dy} up from ${sy}.`;
+      }
+    });
+  }
+
+  /* Room 2 — perimeter */
+  function roomPerimeter() {
+    const w = ri(2, 5), h = ri(2, 4);
+    const ox = ri(1, N - 1 - w), oy = ri(1, N - 2 - h);
+    const shape = new Set();
+    for (let x = ox; x < ox + w; x++) for (let y = oy; y < oy + h; y++) shape.add(x + ',' + y);
+    const ans = 2 * (w + h);
+    askNumber({
+      figure: gridHTML({ shape }),
+      prompt: `This garden is <strong>${w} m wide</strong> and <strong>${h} m tall</strong> (each square = 1 m).<br>How many metres of fence go <strong>around</strong> it? (perimeter)`,
+      unit: 'm', answer: ans,
+      hint: `Perimeter = ${w} + ${h} + ${w} + ${h}, or 2 × (${w} + ${h}).`
+    });
+  }
+
+  /* Room 3 — area (L-shape) */
+  function roomArea() {
+    const w = ri(4, 6), h = ri(3, 5);
+    const cw = ri(1, w - 2), ch = ri(1, h - 2); // cut corner
+    const ox = 1, oy = 1;
+    const shape = new Set();
+    for (let x = ox; x < ox + w; x++) for (let y = oy; y < oy + h; y++) {
+      const inCut = x >= ox + w - cw && y >= oy + h - ch;
+      if (!inCut) shape.add(x + ',' + y);
+    }
+    const ans = w * h - cw * ch;
+    askNumber({
+      figure: gridHTML({ shape }),
+      prompt: `This L-shaped room is tiled with 1 m² squares.<br>What is its <strong>area</strong> in square metres? (Count, or split it into rectangles!)`,
+      unit: 'm²', answer: ans,
+      hint: `Big rectangle ${w} × ${h} = ${w * h}, minus the missing ${cw} × ${ch} corner = ${cw * ch}.`
+    });
+  }
+
+  /* shared numeric room */
+  function askNumber(cfg) {
+    stage().innerHTML = head(`
+      <div class="prompt" style="margin-bottom:10px">${cfg.prompt}</div>
+      ${cfg.figure || ''}
+      <div class="answer-row">
+        <input id="gr-in" inputmode="numeric" autocomplete="off" placeholder="${cfg.unit}" aria-label="Your answer">
+        <button class="btn primary" id="gr-go">Unlock 🔓</button>
+      </div>
+      <div class="feedback" id="gr-fb" aria-live="polite"></div>
+    `);
+    let tries = 0;
+    const go = () => {
+      const fb = $('#gr-fb');
+      const v = parseFloat($('#gr-in').value.replace(/[^\d.\-]/g, ''));
+      if (isNaN(v)) { fb.className = 'feedback bad'; fb.textContent = 'Type a number!'; return; }
+      if (Math.abs(v - cfg.answer) < 0.005) {
+        fb.className = 'feedback good';
+        fb.textContent = `✅ ${cfg.answer} ${cfg.unit} — the lock clicks open! Digit revealed…`;
+        $('#gr-go').disabled = true;
+        state.room++;
+        revealDigit(nextRoom);
+      } else {
+        tries++; state.mistakes++;
+        sfx.bad();
+        fb.className = 'feedback bad';
+        fb.textContent = tries === 1 ? `❌ Not quite. Hint: ${cfg.hint}` : `❌ Hint: ${cfg.hint} Keep trying — the door only opens with the right number!`;
+      }
+    };
+    $('#gr-go').addEventListener('click', go);
+    $('#gr-in').addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+    $('#gr-in').focus();
+  }
+
+  /* Room 4 — angles */
+  function roomAngle() {
+    const kinds = [
+      { deg: 45, type: 'Acute (less than 90°)' },
+      { deg: 60, type: 'Acute (less than 90°)' },
+      { deg: 90, type: 'Right angle (exactly 90°)' },
+      { deg: 120, type: 'Obtuse (between 90° and 180°)' },
+      { deg: 150, type: 'Obtuse (between 90° and 180°)' }
+    ];
+    const k = pick(kinds);
+    const opts = shuffle([
+      'Acute (less than 90°)',
+      'Right angle (exactly 90°)',
+      'Obtuse (between 90° and 180°)',
+      'Straight (exactly 180°)'
+    ]);
+    const rad = k.deg * Math.PI / 180;
+    const x2 = 90 + 80 * Math.cos(rad), y2 = 110 - 80 * Math.sin(rad);
+    stage().innerHTML = head(`
+      <div class="prompt" style="margin-bottom:10px">The last lock is shaped like an angle of <strong>${k.deg}°</strong>.<br>What kind of angle is it?</div>
+      <div class="angle-fig">
+        <svg width="200" height="130" viewBox="0 0 200 130" role="img" aria-label="An angle of ${k.deg} degrees">
+          <line x1="90" y1="110" x2="185" y2="110" stroke="var(--ink)" stroke-width="5" stroke-linecap="round"/>
+          <line x1="90" y1="110" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}" stroke="var(--leaf)" stroke-width="5" stroke-linecap="round"/>
+          <path d="M 120 110 A 30 30 0 0 0 ${(90 + 30 * Math.cos(rad)).toFixed(1)} ${(110 - 30 * Math.sin(rad)).toFixed(1)}" fill="none" stroke="var(--coral)" stroke-width="3"/>
+        </svg>
+      </div>
+      <div class="mc-row">
+        ${opts.map(o => `<button class="btn" data-a="${esc(o)}">${esc(o)}</button>`).join('')}
+      </div>
+      <div class="feedback" id="gr-fb" aria-live="polite"></div>
+    `);
+    $$('.mc-row .btn', stage()).forEach(b => b.addEventListener('click', () => {
+      const fb = $('#gr-fb');
+      if (b.dataset.a === k.type) {
+        fb.className = 'feedback good';
+        fb.textContent = '✅ Correct! The final digit appears…';
+        $$('.mc-row .btn', stage()).forEach(x => x.disabled = true);
+        state.room++;
+        revealDigit(nextRoom);
+      } else {
+        state.mistakes++;
+        sfx.bad();
+        fb.className = 'feedback bad';
+        fb.textContent = `❌ Remember: 90° is a right angle. ${k.deg}° is ${k.deg < 90 ? 'smaller' : 'bigger'} than 90°.`;
+      }
+    }));
+  }
+
+  /* Final door */
+  function roomDoor() {
+    stage().innerHTML = head(`
+      <div class="prompt" style="text-align:center;margin-bottom:12px">🚪 The exit door needs the <strong>4-digit code</strong> you collected. Type it in!</div>
+      <div class="answer-row" style="justify-content:center">
+        <input id="gr-code" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="····"
+          style="max-width:170px;text-align:center;font-size:1.6rem;letter-spacing:.35em" aria-label="Escape code">
+        <button class="btn primary" id="gr-open">Open the door</button>
+      </div>
+      <div class="feedback" id="gr-fb" aria-live="polite"></div>
+    `);
+    const go = () => {
+      const fb = $('#gr-fb');
+      if ($('#gr-code').value === state.code.join('')) {
+        fb.className = 'feedback good';
+        fb.textContent = '🎉 The door swings open — you escaped the grid!';
+        finish();
+      } else {
+        sfx.bad();
+        fb.className = 'feedback bad';
+        fb.textContent = '❌ Wrong code — check the digits you collected above.';
+      }
+    };
+    $('#gr-open').addEventListener('click', go);
+    $('#gr-code').addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+    $('#gr-code').focus();
+  }
+
+  function finish() {
+    const stars = state.mistakes === 0 ? 3 : state.mistakes <= 3 ? 2 : 1;
+    awardStars('grid', stars);
+    setTimeout(() => endCard(stage(), {
+      emoji: '🗝️',
+      title: 'You escaped!',
+      lines: [`You solved all four rooms with <strong>${state.mistakes}</strong> wrong ${state.mistakes === 1 ? 'try' : 'tries'}.`,
+        'Coordinates, perimeter, area, angles — geometry got you out. 🗺️'],
+      stars,
+      onReplay: init
+    }), 1200);
+  }
+
+  return { init };
+})();
+
+/* ============================================================
+   🔐 5. CODEBREAKER
+   ============================================================ */
+games.code = (() => {
+  const stage = () => $('#cb-stage');
+  let state = null;
+
+  function genClues() {
+    const clues = [];
+    // 1. arithmetic sequence
+    {
+      const a = ri(2, 9), d = pick([3, 4, 5, 6, 7]);
+      const seq = [a, a + d, a + 2 * d, a + 3 * d];
+      clues.push({
+        kind: 'seq', seq, answer: a + 4 * d,
+        title: 'The Skip-Counter',
+        hint: `Each number goes up by the same amount. How much is added each time?`,
+        explain: `It adds ${d} each time, so ${a + 3 * d} + ${d} = ${a + 4 * d}.`
+      });
+    }
+    // 2. doubling sequence
+    {
+      const a = pick([2, 3, 4, 5]);
+      const seq = [a, a * 2, a * 4, a * 8];
+      clues.push({
+        kind: 'seq', seq, answer: a * 16,
+        title: 'The Doubler',
+        hint: 'Compare each number with the one before it. Multiply by what?',
+        explain: `Each number doubles: ${a * 8} × 2 = ${a * 16}.`
+      });
+    }
+    // 3. growing gaps
+    {
+      const a = ri(1, 5);
+      const seq = [a, a + 2, a + 5, a + 9]; // +2,+3,+4 → next +5
+      clues.push({
+        kind: 'seq', seq, answer: a + 14,
+        title: 'The Staircase',
+        hint: 'The jumps grow: +2, +3, +4 … what jump comes next?',
+        explain: `The gaps are +2, +3, +4, so next is +5: ${a + 9} + 5 = ${a + 14}.`
+      });
+    }
+    // 4. emoji equation
+    {
+      const x = ri(3, 9), add = ri(4, 9);
+      clues.push({
+        kind: 'eq', eq: `🔺 + ${add} = ${x + add}`, answer: x, sym: '🔺',
+        title: 'The Mystery Triangle',
+        hint: `What number plus ${add} makes ${x + add}? Try ${x + add} − ${add}.`,
+        explain: `🔺 = ${x + add} − ${add} = ${x}.`
+      });
+    }
+    // 5. two-symbol system
+    {
+      const circle = ri(5, 9), tri = ri(2, circle - 1);
+      clues.push({
+        kind: 'eq2',
+        eq1: `🟡 + 🟡 = ${circle * 2}`,
+        eq2: `🟡 + 🔷 = ${circle + tri}`,
+        answer: tri, sym: '🔷',
+        title: 'The Double Agent',
+        hint: `First find 🟡 from the top equation (two of them make ${circle * 2}).`,
+        explain: `🟡 = ${circle}, so 🔷 = ${circle + tri} − ${circle} = ${tri}.`
+      });
+    }
+    return clues;
+  }
+
+  function init() {
+    state = { clue: 0, clues: genClues(), digits: [], mistakes: 0 };
+    nextClue();
+  }
+
+  function vaultHTML() {
+    return `<div class="vault" aria-label="Vault code so far">
+      ${state.clues.map((c, i) => `<span class="code-slot ${i < state.digits.length ? 'got' : ''}">${i < state.digits.length ? state.digits[i] : '·'}</span>`).join('')}
+    </div>`;
+  }
+
+  function nextClue() {
+    if (state.clue >= state.clues.length) return vaultScene();
+    const c = state.clues[state.clue];
+    $('#cb-progress').textContent = `Clue ${state.clue + 1} / ${state.clues.length}`;
+    let body = '';
+    if (c.kind === 'seq') {
+      body = `<div class="clue-seq">
+        ${c.seq.map(n => `<span class="t">${n}</span>`).join('')}
+        <span class="t unk">?</span>
+      </div>
+      <div class="prompt" style="text-align:center">What number comes next?</div>`;
+    } else if (c.kind === 'eq') {
+      body = `<div class="clue-eq">${c.eq}</div>
+      <div class="prompt" style="text-align:center">What number is ${c.sym}?</div>`;
+    } else {
+      body = `<div class="clue-eq">${c.eq1}</div><div class="clue-eq">${c.eq2}</div>
+      <div class="prompt" style="text-align:center">What number is ${c.sym}?</div>`;
+    }
+    stage().innerHTML = `
+      ${vaultHTML()}
+      <p style="text-align:center;color:var(--ink-soft);font-size:.85rem;margin-bottom:6px">Crack all ${state.clues.length} clues — the <strong>ones digit</strong> of each answer becomes part of the vault code.</p>
+      <span class="room-label" style="background:var(--sky-soft)">Clue ${state.clue + 1} · ${esc(c.title)}</span>
+      ${body}
+      <div class="answer-row">
+        <input id="cb-in" inputmode="numeric" autocomplete="off" placeholder="?" aria-label="Your answer">
+        <button class="btn primary" id="cb-go">Decode 🔎</button>
+      </div>
+      <div class="feedback" id="cb-fb" aria-live="polite"></div>
+    `;
+    let tries = 0;
+    const go = () => {
+      const fb = $('#cb-fb');
+      const v = parseFloat($('#cb-in').value.trim());
+      if (isNaN(v)) { fb.className = 'feedback bad'; fb.textContent = 'Type a number!'; return; }
+      if (v === c.answer) {
+        fb.className = 'feedback good';
+        fb.textContent = `✅ ${c.explain} Digit “${c.answer % 10}” added to the code!`;
+        sfx.good();
+        $('#cb-go').disabled = true;
+        state.digits.push(c.answer % 10);
+        state.clue++;
+        setTimeout(nextClue, 1900);
+      } else {
+        tries++; state.mistakes++;
+        sfx.bad();
+        fb.className = 'feedback bad';
+        fb.textContent = tries === 1 ? `❌ Not yet. Hint: ${c.hint}` : `❌ Hint: ${c.hint} You’ve got this, detective!`;
+      }
+    };
+    $('#cb-go').addEventListener('click', go);
+    $('#cb-in').addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+    $('#cb-in').focus();
+  }
+
+  function vaultScene() {
+    $('#cb-progress').textContent = 'The Vault';
+    stage().innerHTML = `
+      ${vaultHTML()}
+      <div class="vault-door" id="cb-door">🔒</div>
+      <div class="prompt" style="text-align:center;margin-bottom:14px">All five digits collected!<br>Enter the code to open the vault.</div>
+      <div class="answer-row" style="justify-content:center">
+        <input id="cb-code" inputmode="numeric" maxlength="5" autocomplete="off" placeholder="·····"
+          style="max-width:200px;text-align:center;font-size:1.5rem;letter-spacing:.3em" aria-label="Vault code">
+        <button class="btn primary" id="cb-open">Turn the wheel</button>
+      </div>
+      <div class="feedback" id="cb-fb" aria-live="polite" style="justify-content:center"></div>
+    `;
+    const go = () => {
+      const fb = $('#cb-fb');
+      if ($('#cb-code').value === state.digits.join('')) {
+        $('#cb-door').classList.add('open');
+        $('#cb-door').textContent = '💎';
+        fb.className = 'feedback good';
+        fb.textContent = '🎉 CLUNK — the vault opens!';
+        setTimeout(finish, 1300);
+      } else {
+        sfx.bad();
+        fb.className = 'feedback bad';
+        fb.textContent = '❌ The wheel won’t turn — check the digits above.';
+      }
+    };
+    $('#cb-open').addEventListener('click', go);
+    $('#cb-code').addEventListener('keydown', e => { if (e.key === 'Enter') go(); });
+    $('#cb-code').focus();
+  }
+
+  function finish() {
+    const stars = state.mistakes === 0 ? 3 : state.mistakes <= 3 ? 2 : 1;
+    awardStars('code', stars);
+    endCard(stage(), {
+      emoji: '💎',
+      title: 'Vault cracked!',
+      lines: [`You broke all 5 clues with <strong>${state.mistakes}</strong> wrong ${state.mistakes === 1 ? 'guess' : 'guesses'}.`,
+        'Sequences and mystery numbers are the first steps of algebra — and you just took them.'],
+      stars,
+      onReplay: init
+    });
+  }
+
+  return { init };
+})();
+
+/* ---------- boot ---------- */
+paintStars();
+paintSound();
+</script>
